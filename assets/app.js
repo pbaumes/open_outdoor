@@ -6,14 +6,48 @@
  */
 
 // any CSS you import will output into a single css file (app.css in this case)
-import './styles/app.css';
-import StylesControl from '@mapbox-controls/styles';
-import '@mapbox-controls/styles/src/index.css';
+import './styles/app.scss';
+require('bootstrap');
+import {Map} from 'maplibre-gl';
 
-var map = new maplibregl.Map({
+const $ = require('jquery');
+
+const transformRequest = (url, resourceType) => {
+    if (isMapboxURL(url)) {
+        return transformMapboxUrl(url, resourceType, mapboxKey)
+    }
+
+    return {url}
+}
+
+let map = new Map({
     container: 'map',
-    style: 'https://demotiles.maplibre.org/style.json', // stylesheet location
-    center: [-74.5, 40], // starting position [lng, lat]
-    zoom: 9 // starting zoom
+    style: 'https://api.maptiler.com/maps/voyager/style.json?key=rrASqj6frF6l2rrOFR4A',
+    center: [3.8833, 43.6],
+    zoom: 9
 });
-map.addControl(new StylesControl({ compact: true }), 'top-left');
+
+var inputs = $('#menu :input');
+
+function switchLayer(layer) {
+    var layerId = layer.target.id;
+    map.setStyle(layerId);
+}
+
+for (var i = 0; i < inputs.length; i++) {
+    inputs[i].onclick = switchLayer;
+}
+
+map.addControl(
+    new maplibregl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true
+    })
+);
+
+var nav = new maplibregl.NavigationControl();
+map.addControl(nav, 'top-right');
+
+
