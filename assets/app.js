@@ -8,7 +8,7 @@
 // any CSS you import will output into a single css file (app.css in this case)
 import './styles/app.scss';
 require('bootstrap');
-import {Map} from 'maplibre-gl';
+import {Map, Marker, GeolocateControl} from 'maplibre-gl';
 
 const $ = require('jquery');
 
@@ -22,7 +22,7 @@ const transformRequest = (url, resourceType) => {
 
 let map = new Map({
     container: 'map',
-    style: 'https://api.maptiler.com/maps/voyager/style.json?key=rrASqj6frF6l2rrOFR4A',
+    style: 'https://geoserveis.icgc.cat/contextmaps/osm-bright.json',
     center: [3.8833, 43.6],
     zoom: 9
 });
@@ -31,7 +31,33 @@ var inputs = $('#menu :input');
 
 function switchLayer(layer) {
     var layerId = layer.target.id;
-    map.setStyle(layerId);
+    let tile;
+
+    if ('osm' === layerId) {
+        tile = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png";
+        const style = {
+            "version": 8,
+            "sources": {
+                "osm": {
+                    "type": "raster",
+                    "tiles": [tile],
+                    "tileSize": 256,
+                    "attribution": "&copy; OpenStreetMap Contributors",
+                    "maxzoom": 19
+                }
+            },
+            "layers": [
+                {
+                    "id": "osm",
+                    "type": "raster",
+                    "source": "osm"
+                }
+            ]
+        };
+        map.setStyle(style);
+    } else {
+        map.setStyle(layerId);
+    }
 }
 
 for (var i = 0; i < inputs.length; i++) {
@@ -49,5 +75,15 @@ map.addControl(
 
 var nav = new maplibregl.NavigationControl();
 map.addControl(nav, 'top-right');
+
+map.on('click', (e) => {
+    let marker = map.getContainer().getElementsByClassName('maplibregl-marker');
+    if (marker.length === 0) {
+        let marker = new Marker({draggable: true})
+            .setLngLat(e.lngLat)
+            .addTo(map);
+    }
+});
+
 
 
